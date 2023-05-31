@@ -75,7 +75,7 @@ namespace MvcCoreElastiCacheAWS.Services
                 {
                     //SERIALIZAMOS Y ALMACENAMOS LA COLECCION ACTUALIZADA
                     string jsonCoches = JsonConvert.SerializeObject(cars);
-                    await this.cache.GetStringAsync("cochesfavoritos", jsonCoches);
+                    await this.cache.GetStringAsync("cochesfavoritos");
                 }
             }
         }
