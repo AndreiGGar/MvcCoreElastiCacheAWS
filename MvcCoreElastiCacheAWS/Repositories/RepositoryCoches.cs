@@ -10,7 +10,8 @@ namespace MvcCoreElastiCacheAWS.Repositories
         public RepositoryCoches()
         {
             string path = "MvcCoreElastiCacheAWS.coches.xml";
-            Stream stream = this.GetType().Assembly.GetManifestResourceStream(path);
+            Stream stream = this.GetType().Assembly
+                .GetManifestResourceStream(path);
             this.document = XDocument.Load(stream);
         }
 

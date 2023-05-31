@@ -16,44 +16,62 @@ namespace MvcCoreElastiCacheAWS.Services
 
         public async Task<List<Coche>> GetCochesFavoritosAsync()
         {
-            string jsonCoches = await this.cache.StringGetAsync("cochesfavoritos");
+            //SE SUPONE QUE PODRIAMOS TENER COCHES ALMACENADOS
+            //MEDIANTE UNA KEY
+            //ALMACENAREMOS LOS COCHES UTILIZANDO JSON Y EN UNA COLECCION
+            string jsonCoches =
+                await this.cache.StringGetAsync("cochesfavoritos");
             if (jsonCoches == null)
             {
                 return null;
             }
             else
             {
-                List<Coche> cars = JsonConvert.DeserializeObject<List<Coche>>(jsonCoches);
+                List<Coche> cars = JsonConvert.DeserializeObject<List<Coche>>
+                    (jsonCoches);
                 return cars;
             }
         }
 
         public async Task AddCocheAsync(Coche car)
         {
+            //PREGUNTAMOS SI EXISTEN COCHES O NO TODAVIA
             List<Coche> coches = await this.GetCochesFavoritosAsync();
-            if (coches != null)
+            //SI NO DEVUELVE NADA, ES LA PRIMERA VEZ QUE ALMACENAMOS ALGO...
+            //Y CREAMOS LA COLECCION
+            if (coches == null)
             {
                 coches = new List<Coche>();
             }
+            //AÑADIMOS EL NUEVO COCHE FAVORITO
             coches.Add(car);
+            //SERIALIZAMOS A JSON
             string jsonCoches = JsonConvert.SerializeObject(coches);
-            await this.cache.StringSetAsync("cochesfavoritos", jsonCoches, TimeSpan.FromMinutes(30));
+            //ALMACENAMOS CON LA KEY DE REDIS
+            await this.cache.StringSetAsync
+                ("cochesfavoritos", jsonCoches, TimeSpan.FromMinutes(30));
         }
 
         public async Task DeleteCocheFavoritoAsync(int idcoche)
         {
-            List<Coche> coches = await this.GetCochesFavoritosAsync();
-            if (coches != null)
+            List<Coche> cars = await this.GetCochesFavoritosAsync();
+            if (cars != null)
             {
-                Coche carEliminar = coches.FirstOrDefault(x => x.IdCoche == idcoche);
-                coches.Remove(carEliminar);
-                if (coches.Count == 0)
+                Coche carEliminar =
+                    cars.FirstOrDefault(x => x.IdCoche == idcoche);
+                cars.Remove(carEliminar);
+                //COMPROBAMOS SI YA NO EXISTEN COCHES FAVORITOS
+                if (cars.Count == 0)
                 {
                     await this.cache.KeyDeleteAsync("cochesfavoritos");
-                } else
+                }
+                else
                 {
-                    string jsonCoches = JsonConvert.SerializeObject(coches);
-                    await this.cache.StringSetAsync("cochesfavoritos", jsonCoches, TimeSpan.FromMinutes(30));
+                    //SERIALIZAMOS Y ALMACENAMOS LA COLECCION ACTUALIZADA
+                    string jsonCoches =
+                        JsonConvert.SerializeObject(cars);
+                    await this.cache.StringSetAsync("cochesfavoritos"
+                        , jsonCoches, TimeSpan.FromMinutes(30));
                 }
             }
         }
